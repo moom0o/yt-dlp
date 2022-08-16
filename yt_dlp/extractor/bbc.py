@@ -440,6 +440,20 @@ class BBCCoUkIE(InfoExtractor):
                         formats.append(fmt)
             elif kind == 'captions':
                 subtitles = self.extract_subtitles(media, programme_id)
+                
+
+        # add 1080p equivalent of 720p version if found: https://gist.github.com/werid/19d4197147617fbe8e7a439ff9fab885
+        for fmt in formats:
+            if '-video=5070000.m3u8' not in fmt.get('url', ''):
+                continue
+            fhd = dict(fmt)
+            fhd['url'] = fmt['url'].replace('-video=5070000.m3u8', '-video=12000000.m3u8')
+            fhd['height'] = 1080
+            fhd['tbr'] = fmt['abr'] + 12000
+            fhd['vbr'] = 12000
+            fhd['width'] = 1920
+            fhd['format_id'] = fmt['format_id'].replace(str(int(fmt['tbr'])), str(int(fhd['tbr'])))
+            formats.append(fhd)
         return formats, subtitles
 
     def _download_playlist(self, playlist_id):
